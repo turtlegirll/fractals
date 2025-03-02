@@ -19,7 +19,9 @@ glm::vec2 center(-0.5f, 0.0f);
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	zoom *= (yoffset > 0) ? 0.9f : 1.1f; 
-}
+	std::cout << "Zoom: " << zoom << " | Center: (" << center.x << ", " << center.y << ")" << std::endl;
+
+	}
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
 		if (action == GLFW_PRESS) {
