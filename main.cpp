@@ -2,11 +2,48 @@
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 #include <chrono>
+#include "glm/glm.hpp" 
 #include"shaderClass.h"
 #include"VAO.h"
 #include"VBO.h"
 #include"EBO.h"
 
+
+bool dragging = false;
+double lastX, lastY;
+
+int maxIterations = 100;
+float zoom = 1.0f;
+
+glm::vec2 center(-0.5f, 0.0f);
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+	zoom *= (yoffset > 0) ? 0.9f : 1.1f; 
+}
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		if (action == GLFW_PRESS) {
+			dragging = true;
+			glfwGetCursorPos(window, &lastX, &lastY);
+		}
+		else if (action == GLFW_RELEASE) {
+			dragging = false;
+		}
+	}
+}
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+	if (dragging) {
+		double dx = xpos - lastX; 
+		double dy = ypos - lastY;
+
+		center.x -= dx * zoom * 0.005f; 
+		center.y += dy * zoom * 0.005f; 
+
+		lastX = xpos; 
+		lastY = ypos;
+	}
+}
 
 
 int main() {
@@ -21,20 +58,19 @@ int main() {
 
 	GLfloat vertices[] =
 	{
-		-0.5f,		-0.5f * float(sqrt(3)) / 3,		0.0f, 1.0f, 0.0f, 0.0f,	// Lower left corner
-		0.5f,		-0.5f * float(sqrt(3)) / 3,		0.0f, 1.0f, 0.0f, 0.0f,	// Lower right corner
-		0.0f,		0.5f * float(sqrt(3)) * 2 / 3,	0.0f, 1.0f, 0.7f, 0.0f,	// Upper corner
-		-0.5f / 2,	0.5f * float(sqrt(3)) / 6,		0.0f, 1.0f, 0.7f, 0.0f,	// Inner left
-		0.5f / 2,	0.5f * float(sqrt(3)) / 6,		0.0f, 0.3f, 0.4f, 0.4f,	// Inner right
-		0.0f,		-0.5f * float(sqrt(3)) / 3,		0.0f ,0.4f, 0.5f, 0.6f,	// Inner down
+		-1.0f,-1.0f, //bottom left
+		1.0f,-1.0f,	//bottom right
+		-1.0f,1.0f,	//top left
+		1.0f,1.0f,	//top right
+
+
 	};
 
 	// Indices for vertices order
 	GLuint indices[] =
 	{
-		0, 3, 5, // Lower left triangle
-		3, 2, 4, // Upper triangle
-		5, 4, 1 // Lower right triangle
+		0,1,2,
+		1,3,2
 	};
 
 	GLFWwindow* window = glfwCreateWindow(800, 800, "fractals", NULL, NULL);
@@ -59,7 +95,7 @@ int main() {
 	//which stores pointers to one or more vbo and tells opengl to interpret that
 	//vao needs to be generated before vbo
 
-	Shader shaderProgram("default.vert", "default.frag");
+	Shader shaderProgram("fractal.vert", "fractal.frag");
 
 	VAO VAO1;
 
@@ -71,15 +107,21 @@ int main() {
 	EBO EBO1(indices, sizeof(indices));
 
 	//links vbo to vao and binds vbo
-	VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3*sizeof(float)));
+	VAO1.LinkAttrib(VBO1, 0, 2, GL_FLOAT, 2 * sizeof(float), (void*)0);
 
 	VAO1.Unbind();
 	VBO1.Unbind();
 	EBO1.Unbind();
 
-	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
+	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "zoom");
+	GLuint uniID2 = glGetUniformLocation(shaderProgram.ID, "center");
+	GLuint uniID3 = glGetUniformLocation(shaderProgram.ID, "maxIterations");
 
+
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetCursorPosCallback(window, cursor_position_callback);
+
+	glfwSetScrollCallback(window, scroll_callback); 
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -88,13 +130,12 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shaderProgram.Activate();
-
-		//assigns a value to the uniform
-		//has to be done after activating the shader program
-		glUniform1f(uniID, -0.4f);
+		glUniform1f(uniID, zoom);
+		glUniform2f(uniID2, center.x,center.y);
+		glUniform1i(uniID3, maxIterations);
 
 		VAO1.Bind(); //tell opengl we wanna use this vao
-		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();

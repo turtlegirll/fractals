@@ -48,7 +48,7 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile) {
 
 
 	//link all shaders together into shader programm
-	glLinkProgram(ID);
+	glLinkProgram(ID); 
 	compileErrors(ID, "PROGRAM");
 
 	glDeleteShader(vertexShader);
