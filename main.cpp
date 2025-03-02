@@ -78,7 +78,6 @@ int main() {
 	VBO1.Unbind();
 	EBO1.Unbind();
 
-	//gets reference value of uniform from vbo
 	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
 
