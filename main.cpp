@@ -7,6 +7,9 @@
 #include"VAO.h"
 #include"VBO.h"
 #include"EBO.h"
+#include "boost/multiprecision/cpp_dec_float.hpp"
+using namespace boost::multiprecision;
+using HighPrecision = cpp_dec_float_100;
 
 
 bool dragging = false;

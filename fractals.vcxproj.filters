@@ -38,12 +38,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="default.vert">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
-    <None Include="default.frag">
-      <Filter>Resource Files\shaders</Filter>
-    </None>
+    <None Include="fractal.frag" />
+    <None Include="fractal.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shaderClass.h">
